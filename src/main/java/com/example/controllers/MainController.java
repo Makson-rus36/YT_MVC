@@ -1,0 +1,75 @@
+package com.example.controllers;
+
+import com.example.models.Message;
+import com.example.models.User;
+import com.example.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Controller
+public class MainController  {
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Value("${upload.path}")
+    private String uploadPath;
+
+    @GetMapping("/main")
+    public String main(
+            @RequestParam(required = false, defaultValue = "") String filter
+            ,Map<String, Object> model){
+        Iterable<Message> messageAll;
+        if(filter != null && !filter.isEmpty())
+            messageAll = messageRepository.findByTag(filter);
+        else
+            messageAll = messageRepository.findAll();
+        model.put("messages", messageAll);
+        model.put("filter", filter);
+        return "mainPage";
+    }
+
+    @PostMapping("/main")
+    public String add(
+            @AuthenticationPrincipal User user,
+            @RequestParam (required = true) String textMessage,
+            @RequestParam (required = true) String tag ,
+            @RequestParam("file") MultipartFile file,
+            Map<String, Object> model) throws IOException {
+        Message message = new Message(textMessage, tag, user);
+        if(file!=null && !file.getOriginalFilename().isEmpty()){
+            File uploadDir = new File(uploadPath);
+            if(!uploadDir.exists())
+                uploadDir.mkdir();
+            String uuidFile = UUID.randomUUID().toString();
+            String resultfilename = uuidFile + "." + file.getOriginalFilename();
+            file.transferTo(new File(uploadPath+"/"+resultfilename));
+            message.setFilename(resultfilename);
+        }
+        messageRepository.save(message);
+        Iterable<Message> messageAll = messageRepository.findAll();
+        model.put("messages", messageAll);
+        return "redirect:/main";
+    }
+
+
+    @GetMapping("/")
+    public String helloPage(@RequestParam(name="name", required = false, defaultValue = "World") String name,
+                            Map<String, Object> model){
+        model.put("name",name);
+        return "home";
+    }
+}
