@@ -23,7 +23,7 @@ public class UserService implements UserDetailsService {
     private MailSender mailSender;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder1;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -42,7 +42,7 @@ public class UserService implements UserDetailsService {
         user.setActive(true);
         user.setRoles(Collections.singleton(Role.USER));
         user.setActivation(UUID.randomUUID().toString());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder1.encode(user.getPassword()));
         userRepository.save(user);
 
         sendMessage(user);
