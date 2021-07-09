@@ -109,7 +109,7 @@ public class UserService implements UserDetailsService {
 
         if(StringUtils.isEmpty(password))
         {
-            user.setPassword(password);
+            user.setPassword(passwordEncoder1.encode(password));
         }
 
         System.out.println(user.getEmail());
