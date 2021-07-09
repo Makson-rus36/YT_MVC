@@ -103,6 +103,10 @@ public class MainController  {
             @RequestParam(required = false) Message message,
             Model model
     ){
+        model.addAttribute("userChannel", user);
+        model.addAttribute("subscriptionsCount", user.getSubscribtions().size());
+        model.addAttribute("subscribersCount", user.getSubscribers().size());
+        model.addAttribute("isSubscriber", user.getSubscribers().contains(currentUser));
         model.addAttribute("messages",user.getMessages());
         model.addAttribute("message",message);
         model.addAttribute("isCurrentUser",currentUser.equals(user));
